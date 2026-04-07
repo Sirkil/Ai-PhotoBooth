@@ -101,8 +101,8 @@
 
         /* ─── Camera graphic / hero icon ─── */
         .hero-graphic {
-            width: 200px;
-            height: 200px;
+            width: 150px;
+            height: 150px;
             object-fit: contain;
             margin: 16px auto 12px;
             /* soft green glow matching memory game brain */
@@ -137,7 +137,7 @@
         }
 
         /* ─── Inputs ─── */
-        input, select {
+        input {
             width: 100%;
             max-width: 80vw;
             padding: 2vh 2vw;
@@ -153,9 +153,8 @@
             backdrop-filter: blur(6px);
         }
         input::placeholder { color: rgba(255,255,255,0.5); }
-        select option { color: #000; background: #fff; }
 
-        /* ─── Primary Button (white with green glow — matches Memory game) ─── */
+        /* ─── Primary Button (white with green glow) ─── */
         .btn {
             background: #ffffff;
             color: #1a1a1a;
@@ -170,7 +169,6 @@
             max-width: 80vw;
             margin-top: 2vh;
             transition: transform 0.15s, box-shadow 0.15s;
-            /* green glow identical to the Start Game button */
             box-shadow: 0 0 0 3px rgba(0, 255, 80, 0.55), 0 8px 30px rgba(0, 200, 60, 0.3);
             letter-spacing: 0.5px;
         }
@@ -179,13 +177,20 @@
             box-shadow: 0 0 0 2px rgba(0, 255, 80, 0.3), 0 4px 16px rgba(0,0,0,0.3);
         }
 
+        /* Reduced height for Back to Home button */
+        #homeBtn {
+            padding: 1.5vh 4vw; 
+            font-size: clamp(18px, 2.5vh, 28px);
+            margin-top: 3vh;
+        }
+
         /* ─── Camera / Result Frame ─── */
         .image-frame {
             background: rgba(255,255,255,0.05);
             border: 2px solid rgba(255,255,255,0.15);
             border-radius: 16px;
             box-shadow: 0 0 40px rgba(0,220,80,0.2);
-            height: clamp(300px, 50vh, 900px);
+            height: clamp(300px, 45vh, 800px);
             aspect-ratio: 9/16;
             display: flex;
             justify-content: center;
@@ -223,33 +228,23 @@
             align-items: center;
             justify-content: center;
             margin-top: 14px;
-            gap: 14px;
+            gap: 20px;
         }
         .qr-section img.qr-img {
-            width: 90px;
-            height: 90px;
+            width: 160px; /* Enlarged for better scanning */
+            height: 160px;
             border: 4px solid white;
             border-radius: 10px;
             background: white;
         }
         .qr-text {
-            font-size: 13px;
+            font-size: 15px;
             font-weight: 700;
             line-height: 1.4;
-            max-width: 130px;
+            max-width: 140px;
             color: white;
         }
 
-        /* ─── Brought to you by (inside content, above footer) ─── */
-        .brought-by-img {
-            width: 85%;
-            max-width: 300px;
-            margin: 16px auto 8px;
-            display: block;
-            opacity: 0.95;
-        }
-
-        /* spacer */
         .spacer { flex: 1; }
     </style>
 </head>
@@ -257,42 +252,26 @@
 
 <div class="kiosk-container">
 
-    <!-- Background -->
     <img class="bg" src="assets/background.png" alt="">
 
-    <!-- Header -->
     <div class="site-header">
         <img src="assets/Header.png" alt="Haleon Partners Club">
     </div>
 
-    <!-- All Screens live here -->
     <div class="content-area">
 
-        <!-- ══════════════════════════════════
-             SCREEN 1 – START
-        ══════════════════════════════════ -->
         <div id="startScreen" class="screen active">
-            <!-- Camera / hero graphic — using emoji as placeholder; swap with your PNG if available -->
-            <div class="hero-graphic" style="font-size:110px; width:auto; height:auto; text-align:center; filter: drop-shadow(0 0 28px rgba(0,255,100,0.45));">📷</div>
+            <img class="hero-graphic" src="assets/Cam.png" alt="Camera">
 
             <h1 class="title">AI Photo<br>Booth</h1>
             <p class="subtitle">Ready to Capture the Moment?</p>
-            <p class="point-badge">Choose your scene &amp; snap a photo!</p>
+            <p class="point-badge">Enter your name &amp; snap a photo!</p>
 
             <input type="text" id="userName" placeholder="Enter your name" required>
-            <select id="moodSelect">
-                <option value="beach">🏖️ Tropical Beach</option>
-                <option value="birthday">🎂 Birthday Party</option>
-                <option value="party">🪩 Neon Club</option>
-                <option value="trip">⛰️ Mountain Trip</option>
-            </select>
 
             <button class="btn" id="startBtn">Start Photobooth</button>
         </div>
 
-        <!-- ══════════════════════════════════
-             SCREEN 2 – CAMERA
-        ══════════════════════════════════ -->
         <div id="cameraScreen" class="screen">
             <p class="subtitle" style="margin-top:8px;">Look at the Camera…</p>
 
@@ -303,9 +282,6 @@
             <button class="btn" id="captureBtn">📸 Capture</button>
         </div>
 
-        <!-- ══════════════════════════════════
-             SCREEN 3 – LOADING
-        ══════════════════════════════════ -->
         <div id="loadingScreen" class="screen">
             <div class="spacer"></div>
             <div class="loading-graphic">✨📷✨</div>
@@ -314,9 +290,6 @@
             <div class="spacer"></div>
         </div>
 
-        <!-- ══════════════════════════════════
-             SCREEN 4 – RESULT
-        ══════════════════════════════════ -->
         <div id="resultScreen" class="screen">
             <p class="subtitle" id="resultSubtitle" style="margin-top:8px;">Your Artwork is Ready! 🎉</p>
 
@@ -332,22 +305,16 @@
             <button class="btn" id="homeBtn">🏠 Back to Home</button>
         </div>
 
-    </div><!-- /content-area -->
-
-    <!-- Footer -->
-    <div class="site-footer">
+    </div><div class="site-footer">
         <img src="assets/Footer.png" alt="brought to you by Panadol & Centrum – PM-EG-CNT-26-00007">
     </div>
 
-</div><!-- /kiosk-container -->
-
-<canvas id="canvas" style="display:none;"></canvas>
+</div><canvas id="canvas" style="display:none;"></canvas>
 <img id="frameImg" src="assets/frame.png" style="display:none;">
 
 <script>
     const video  = document.getElementById('video');
     const canvas = document.getElementById('canvas');
-    let selectedMode    = 'beach';
     let currentUserName = '';
 
     function showScreen(id) {
@@ -360,7 +327,7 @@
         const nameVal = document.getElementById('userName').value.trim();
         if (!nameVal) { alert('Please enter your name first!'); return; }
         currentUserName = nameVal;
-        selectedMode    = document.getElementById('moodSelect').value;
+        
         showScreen('cameraScreen');
         if (!video.srcObject) {
             navigator.mediaDevices
@@ -383,7 +350,7 @@
             const response = await fetch('/process-image', {
                 method:  'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify({ image_url: base64Image, mode: selectedMode })
+                body:    JSON.stringify({ image_url: base64Image })
             });
             const data = await response.json();
 
@@ -427,7 +394,9 @@
                             body:    JSON.stringify({ image_url: finalImageUrl, userName: currentUserName })
                         });
                         const uploadData = await uploadRes.json();
-                        qrImgEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(uploadData.link)}`;
+                        
+                        // Increased requested QR code size to 250x250 for higher fidelity scanning
+                        qrImgEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(uploadData.link)}`;
                         qrTextEl.innerHTML = 'SCAN QR CODE<br>TO DOWNLOAD<br>YOUR PHOTO';
                     } catch {
                         qrTextEl.innerHTML = 'UPLOAD FAILED.<br>SEE STAFF.';

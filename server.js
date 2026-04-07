@@ -12,20 +12,13 @@ const ai = new GoogleGenAI({});
 
 app.post('/process-image', async (req, res) => {
     try {
-        const { image_url, mode } = req.body;
+        const { image_url } = req.body;
         
-        // Simplified prompts focused strictly on the environment and quality
-        const modePrompts = {
-            beach: `Put the person in the attached image relaxing on a beautiful tropical beach. Sunny, realistic, high detail, 4k.`,
-            birthday: `Put the person in the attached image at a joyous birthday celebration. Surrounded by balloons, highly detailed, 4k.`,
-            party: `Put the person in the attached image at a crazy neon club party. Dancing, laser lights, 4k.`,
-            trip: `Turn the person in the attached image into an adventurous traveler hiking a mountain peak. Beautiful scenery, 4k.`
-        };
+        // Hardcoded custom AI prompt
+        const selectedPrompt = `Transform the person in the image into a futuristic AI photobooth portrait. Keep the original face identity unchanged, centered and looking directly at the camera. Make the person wear a clean white pharmacist lab coat over a subtle green shirt. Add a soft neon green glow around the body and face, with floating digital particles and light dots surrounding the head. Use cinematic lighting with a dark background, soft spotlight from above, and green rim light accents. Style the image as ultra-realistic, high detail, sharp focus, studio quality. Add a subtle futuristic interface feel (like a scanning system), with soft green UI elements or light effects, but keep it minimal and clean. Ensure the skin tones look natural, with enhanced clarity and slight beauty retouching. The final image should feel like a high-end AI booth portrait, modern, elegant, and slightly futuristic. --ar 2:3 --style cinematic --ultra realistic --high detail`;
 
-        const selectedPrompt = modePrompts[mode] || modePrompts['beach'];
         const base64Data = image_url.replace(/^data:image\/\w+;base64,/, "");
 
-        // Updated to the new, faster 3.1 model
         const response = await ai.models.generateContent({
             model: "gemini-3.1-flash-image-preview",
             contents: [
