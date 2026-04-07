@@ -305,14 +305,17 @@
             <button class="btn" id="homeBtn">🏠 Back to Home</button>
         </div>
 
-    </div><div class="site-footer">
+    </div>
+    
+    <div class="site-footer">
         <img src="assets/Footer.png" alt="brought to you by Panadol & Centrum – PM-EG-CNT-26-00007">
     </div>
 
-</div><canvas id="canvas" style="display:none;"></canvas>
-<img id="frameImg" src="assets/frame.png" style="display:none;">
+</div>
 
-<script>
+<canvas id="canvas" style="display:none;"></canvas>
+<img id="frameImg" src="assets/frame.png" style="display:none;">
+<img id="footerImg" src="assets/Footer Ai.png" style="display:none;"> <script>
     const video  = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     let currentUserName = '';
@@ -362,6 +365,7 @@
                     const compCanvas = document.createElement('canvas');
                     const ctx        = compCanvas.getContext('2d');
                     const frame      = document.getElementById('frameImg');
+                    const footer     = document.getElementById('footerImg');
 
                     if (frame && frame.naturalWidth > 0) {
                         compCanvas.width  = frame.naturalWidth;
@@ -374,6 +378,15 @@
                         compCanvas.width  = aiImgObj.width;
                         compCanvas.height = aiImgObj.height;
                         ctx.drawImage(aiImgObj, 0, 0);
+                    }
+
+                    // --- NEW: Draw the Footer at the bottom of the canvas ---
+                    if (footer && footer.naturalWidth > 0) {
+                        const footerWidth = compCanvas.width;
+                        // Calculate height to maintain the footer's aspect ratio
+                        const footerHeight = (footer.naturalHeight / footer.naturalWidth) * footerWidth; 
+                        // Draw at the exact bottom (Y = Canvas Height - Footer Height)
+                        ctx.drawImage(footer, 0, compCanvas.height - footerHeight, footerWidth, footerHeight);
                     }
 
                     const finalImageUrl = compCanvas.toDataURL('image/jpeg', 0.95);
