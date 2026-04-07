@@ -105,7 +105,6 @@
             height: 150px;
             object-fit: contain;
             margin: 16px auto 12px;
-            /* soft green glow matching memory game brain */
             filter: drop-shadow(0 0 28px rgba(0, 255, 100, 0.45));
             display: block;
         }
@@ -154,7 +153,7 @@
         }
         input::placeholder { color: rgba(255,255,255,0.5); }
 
-        /* ─── Primary Button (white with green glow) ─── */
+        /* ─── Primary Button ─── */
         .btn {
             background: #ffffff;
             color: #1a1a1a;
@@ -177,7 +176,6 @@
             box-shadow: 0 0 0 2px rgba(0, 255, 80, 0.3), 0 4px 16px rgba(0,0,0,0.3);
         }
 
-        /* Reduced height for Back to Home button */
         #homeBtn {
             padding: 1.5vh 4vw; 
             font-size: clamp(18px, 2.5vh, 28px);
@@ -231,7 +229,7 @@
             gap: 20px;
         }
         .qr-section img.qr-img {
-            width: 160px; /* Enlarged for better scanning */
+            width: 160px;
             height: 160px;
             border: 4px solid white;
             border-radius: 10px;
@@ -262,23 +260,18 @@
 
         <div id="startScreen" class="screen active">
             <img class="hero-graphic" src="assets/Cam.png" alt="Camera">
-
             <h1 class="title">AI Photo<br>Booth</h1>
             <p class="subtitle">Ready to Capture the Moment?</p>
             <p class="point-badge">Enter your name &amp; snap a photo!</p>
-
             <input type="text" id="userName" placeholder="Enter your name" required>
-
             <button class="btn" id="startBtn">Start Photobooth</button>
         </div>
 
         <div id="cameraScreen" class="screen">
             <p class="subtitle" style="margin-top:8px;">Look at the Camera…</p>
-
             <div class="image-frame">
                 <video id="video" autoplay playsinline></video>
             </div>
-
             <button class="btn" id="captureBtn">📸 Capture</button>
         </div>
 
@@ -292,16 +285,13 @@
 
         <div id="resultScreen" class="screen">
             <p class="subtitle" id="resultSubtitle" style="margin-top:8px;">Your Artwork is Ready! 🎉</p>
-
             <div class="image-frame">
                 <img id="resultImg" alt="Your AI photo" />
             </div>
-
             <div class="qr-section" id="qrCodeContainer">
                 <img id="qrImg" class="qr-img" alt="QR Code">
                 <div class="qr-text" id="qrText">SCAN QR CODE<br>TO DOWNLOAD<br>YOUR PHOTO</div>
             </div>
-
             <button class="btn" id="homeBtn">🏠 Back to Home</button>
         </div>
 
@@ -315,7 +305,8 @@
 
 <canvas id="canvas" style="display:none;"></canvas>
 <img id="frameImg" src="assets/frame.png" style="display:none;">
-<img id="footerImg" src="assets/Footer Ai.png" style="display:none;"> <script>
+<img id="footerImg" src="assets/Footer Ai.png" style="display:none;">
+<img id="badgeImg" src="assets/Batch.png" style="display:none;"> <script>
     const video  = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     let currentUserName = '';
@@ -325,7 +316,6 @@
         document.getElementById(id).classList.add('active');
     }
 
-    /* ── START ── */
     document.getElementById('startBtn').onclick = () => {
         const nameVal = document.getElementById('userName').value.trim();
         if (!nameVal) { alert('Please enter your name first!'); return; }
@@ -340,7 +330,6 @@
         }
     };
 
-    /* ── CAPTURE ── */
     document.getElementById('captureBtn').onclick = async () => {
         canvas.width  = video.videoWidth;
         canvas.height = video.videoHeight;
@@ -366,26 +355,42 @@
                     const ctx        = compCanvas.getContext('2d');
                     const frame      = document.getElementById('frameImg');
                     const footer     = document.getElementById('footerImg');
+                    const badge      = document.getElementById('badgeImg'); // Our Badge Layer
+
+                    let drawX = 0, drawY = 0, drawW = aiImgObj.width, drawH = aiImgObj.height;
 
                     if (frame && frame.naturalWidth > 0) {
                         compCanvas.width  = frame.naturalWidth;
                         compCanvas.height = frame.naturalHeight;
                         ctx.drawImage(frame, 0, 0);
-                        const centerX = (compCanvas.width  - 1080) / 2;
-                        const centerY = (compCanvas.height - 1920) / 2;
-                        ctx.drawImage(aiImgObj, centerX, centerY, 1080, 1920);
+                        drawW = 1080;
+                        drawH = 1920;
+                        drawX = (compCanvas.width  - drawW) / 2;
+                        drawY = (compCanvas.height - drawH) / 2;
+                        ctx.drawImage(aiImgObj, drawX, drawY, drawW, drawH);
                     } else {
                         compCanvas.width  = aiImgObj.width;
                         compCanvas.height = aiImgObj.height;
                         ctx.drawImage(aiImgObj, 0, 0);
                     }
 
-                    // --- NEW: Draw the Footer at the bottom of the canvas ---
+                    // --- NEW: Draw the Badge Layer onto the Lab Coat ---
+                    if (badge && badge.naturalWidth > 0) {
+                        const badgeW = drawW * 0.20; // Size: 20% of the image width
+                        const badgeH = (badge.naturalHeight / badge.naturalWidth) * badgeW;
+                        
+                        // Positioning: Move 66% across to the right, and 64% down from the top 
+                        // (You can adjust 0.66 and 0.64 if you need it slightly higher/lower/left/right)
+                        const badgeX = drawX + (drawW * 0.66);
+                        const badgeY = drawY + (drawH * 0.64);
+                        
+                        ctx.drawImage(badge, badgeX, badgeY, badgeW, badgeH);
+                    }
+
+                    // --- Draw the Footer Layer ---
                     if (footer && footer.naturalWidth > 0) {
                         const footerWidth = compCanvas.width;
-                        // Calculate height to maintain the footer's aspect ratio
                         const footerHeight = (footer.naturalHeight / footer.naturalWidth) * footerWidth; 
-                        // Draw at the exact bottom (Y = Canvas Height - Footer Height)
                         ctx.drawImage(footer, 0, compCanvas.height - footerHeight, footerWidth, footerHeight);
                     }
 
@@ -407,8 +412,6 @@
                             body:    JSON.stringify({ image_url: finalImageUrl, userName: currentUserName })
                         });
                         const uploadData = await uploadRes.json();
-                        
-                        // Increased requested QR code size to 250x250 for higher fidelity scanning
                         qrImgEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(uploadData.link)}`;
                         qrTextEl.innerHTML = 'SCAN QR CODE<br>TO DOWNLOAD<br>YOUR PHOTO';
                     } catch {
@@ -425,7 +428,6 @@
         }
     };
 
-    /* ── HOME ── */
     document.getElementById('homeBtn').onclick = () => {
         document.getElementById('userName').value        = '';
         document.getElementById('qrCodeContainer').style.display = 'none';

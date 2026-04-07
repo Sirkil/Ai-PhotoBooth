@@ -1,8 +1,6 @@
 const express = require('express');
 const { GoogleGenAI } = require('@google/genai');
 const cors = require('cors');
-const fs = require('fs');
-const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -16,31 +14,17 @@ app.post('/process-image', async (req, res) => {
     try {
         const { image_url } = req.body;
         
-        // Updated custom AI prompt
-        const selectedPrompt = `Transform the person in the image into a futuristic AI photobooth portrait. Keep the original face identity unchanged, centered and looking directly at the camera. Make the person wear a clean white pharmacist lab coat over a subtle green shirt. Add a realistic embroidered patch on the lab coat (chest area), using the provided logo exactly as reference. The patch should preserve the original logo design, colors (black, white, and green), and typography. It should look naturally stitched or printed onto the fabric, with realistic texture and lighting integration. Add a soft neon green glow around the body and face, with floating digital particles and light dots surrounding the head. Use cinematic lighting with a dark background, soft spotlight from above, and green rim light accents. Style the image as ultra-realistic, high detail, sharp focus, studio quality. Add a subtle futuristic interface feel (like a scanning system), with soft green UI elements or light effects, but keep it minimal and clean. Ensure the skin tones look natural, with enhanced clarity and slight beauty retouching. The final image should feel like a high-end AI booth portrait, modern, elegant, and slightly futuristic. --ar 2:3 --style cinematic --ultra realistic --high detail`;
+        // Custom prompt updated to KEEP THE COAT BLANK so the layer looks perfect
+        const selectedPrompt = `Transform the person in the image into a futuristic AI photobooth portrait. Keep the original face identity unchanged, centered and looking directly at the camera. Make the person wear a clean white pharmacist lab coat over a subtle green shirt. IMPORTANT: Leave the chest area of the coat completely blank and clean, do not generate any logos, text, or patches. Add a soft neon green glow around the body and face, with floating digital particles and light dots surrounding the head. Use cinematic lighting with a dark background, soft spotlight from above, and green rim light accents. Style the image as ultra-realistic, high detail, sharp focus, studio quality. Add a subtle futuristic interface feel (like a scanning system), with soft green UI elements or light effects, but keep it minimal and clean. Ensure the skin tones look natural, with enhanced clarity and slight beauty retouching. The final image should feel like a high-end AI booth portrait, modern, elegant, and slightly futuristic. --ar 2:3 --style cinematic --ultra realistic --high detail`;
 
         const base64Data = image_url.replace(/^data:image\/\w+;base64,/, "");
 
-        const contents = [
-            { text: selectedPrompt },
-            { inlineData: { mimeType: "image/jpeg", data: base64Data } }
-        ];
-
-        // Pass the Batch logo to the AI so it can use it as a reference for the patch
-        const badgePath = path.join(__dirname, 'assets', 'Batch.png');
-        if (fs.existsSync(badgePath)) {
-            const badgeBuffer = fs.readFileSync(badgePath);
-            contents.push({
-                inlineData: { 
-                    mimeType: "image/png", 
-                    data: badgeBuffer.toString('base64') 
-                }
-            });
-        }
-
         const response = await ai.models.generateContent({
             model: "gemini-3.1-flash-image-preview",
-            contents: contents
+            contents: [
+                { text: selectedPrompt },
+                { inlineData: { mimeType: "image/jpeg", data: base64Data } }
+            ]
         });
 
         const generatedParts = response.candidates?.[0]?.content?.parts || [];
