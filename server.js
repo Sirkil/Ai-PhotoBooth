@@ -14,8 +14,27 @@ app.post('/process-image', async (req, res) => {
     try {
         const { image_url } = req.body;
         
-        // Custom prompt updated to KEEP THE COAT BLANK so the layer looks perfect
-        const selectedPrompt = `Transform the person in the image into a futuristic AI photobooth portrait. Keep the original face identity unchanged, centered and looking directly at the camera. Make the person wear a clean white pharmacist lab coat over a subtle green shirt. IMPORTANT: Leave the chest area of the coat completely blank and clean, do not generate any logos, text, or patches. Add a soft neon green glow around the body and face, with floating digital particles and light dots surrounding the head. Use cinematic lighting with a dark background, soft spotlight from above, and green rim light accents. Style the image as ultra-realistic, high detail, sharp focus, studio quality. Add a subtle futuristic interface feel (like a scanning system), with soft green UI elements or light effects, but keep it minimal and clean. Ensure the skin tones look natural, with enhanced clarity and slight beauty retouching. The final image should feel like a high-end AI booth portrait, modern, elegant, and slightly futuristic. --ar 2:3 --style cinematic --ultra realistic --high detail`;
+        // Hardcoded custom AI prompt
+        const selectedPrompt = `Transform the person in the image into a futuristic AI photobooth portrait. 
+Keep the original face identity unchanged, centered and looking directly at the camera.
+
+Make the person wear a clean white pharmacist lab coat over a subtle green shirt.
+
+Add a realistic embroidered patch on the lab coat (chest area), using the provided logo exactly as reference. 
+The patch should preserve the original logo design, colors (black, white, and green), and typography. 
+It should look naturally stitched or printed onto the fabric, with realistic texture and lighting integration.
+
+Add a soft neon green glow around the body and face, with floating digital particles and light dots surrounding the head.
+
+Use cinematic lighting with a dark background, soft spotlight from above, and green rim light accents. 
+Style the image as ultra-realistic, high detail, sharp focus, studio quality.
+
+Add a subtle futuristic interface feel (like a scanning system), with soft green UI elements or light effects, but keep it minimal and clean.
+
+Ensure the skin tones look natural, with enhanced clarity and slight beauty retouching. 
+The final image should feel like a high-end AI booth portrait, modern, elegant, and slightly futuristic.
+
+--ar 2:3 --style cinematic --ultra realistic --high detail`;
 
         const base64Data = image_url.replace(/^data:image\/\w+;base64,/, "");
 

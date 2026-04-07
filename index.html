@@ -177,7 +177,7 @@
         }
 
         #homeBtn {
-            padding: 1.5vh 4vw; 
+            padding: 1.5vh 4vw;
             font-size: clamp(18px, 2.5vh, 28px);
             margin-top: 3vh;
         }
@@ -258,23 +258,31 @@
 
     <div class="content-area">
 
+        <!-- START SCREEN -->
         <div id="startScreen" class="screen active">
             <img class="hero-graphic" src="assets/Cam.png" alt="Camera">
+
             <h1 class="title">AI Photo<br>Booth</h1>
             <p class="subtitle">Ready to Capture the Moment?</p>
             <p class="point-badge">Enter your name &amp; snap a photo!</p>
+
             <input type="text" id="userName" placeholder="Enter your name" required>
+
             <button class="btn" id="startBtn">Start Photobooth</button>
         </div>
 
+        <!-- CAMERA SCREEN -->
         <div id="cameraScreen" class="screen">
             <p class="subtitle" style="margin-top:8px;">Look at the Camera…</p>
+
             <div class="image-frame">
                 <video id="video" autoplay playsinline></video>
             </div>
+
             <button class="btn" id="captureBtn">📸 Capture</button>
         </div>
 
+        <!-- LOADING SCREEN -->
         <div id="loadingScreen" class="screen">
             <div class="spacer"></div>
             <div class="loading-graphic">✨📷✨</div>
@@ -283,30 +291,37 @@
             <div class="spacer"></div>
         </div>
 
+        <!-- RESULT SCREEN -->
         <div id="resultScreen" class="screen">
             <p class="subtitle" id="resultSubtitle" style="margin-top:8px;">Your Artwork is Ready! 🎉</p>
+
             <div class="image-frame">
                 <img id="resultImg" alt="Your AI photo" />
             </div>
+
             <div class="qr-section" id="qrCodeContainer">
                 <img id="qrImg" class="qr-img" alt="QR Code">
                 <div class="qr-text" id="qrText">SCAN QR CODE<br>TO DOWNLOAD<br>YOUR PHOTO</div>
             </div>
+
             <button class="btn" id="homeBtn">🏠 Back to Home</button>
         </div>
 
     </div>
-    
+
     <div class="site-footer">
         <img src="assets/Footer.png" alt="brought to you by Panadol & Centrum – PM-EG-CNT-26-00007">
     </div>
 
 </div>
 
+<!-- Hidden helpers -->
 <canvas id="canvas" style="display:none;"></canvas>
-<img id="frameImg" src="assets/frame.png" style="display:none;">
-<img id="footerImg" src="assets/Footer Ai.png" style="display:none;">
-<img id="badgeImg" src="assets/Batch.png" style="display:none;"> <script>
+<img id="frameImg"   src="assets/frame.png"      style="display:none;">
+<img id="batchImg"   src="assets/Batch.png"      style="display:none;">
+<img id="footerAiImg" src="assets/Footer_Ai.png" style="display:none;">
+
+<script>
     const video  = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     let currentUserName = '';
@@ -316,11 +331,23 @@
         document.getElementById(id).classList.add('active');
     }
 
+    /* ── Preload an image and resolve when ready ── */
+    function loadImage(src) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload  = () => resolve(img);
+            img.onerror = reject;
+            img.src = src;
+        });
+    }
+
+    /* ── START ── */
     document.getElementById('startBtn').onclick = () => {
         const nameVal = document.getElementById('userName').value.trim();
         if (!nameVal) { alert('Please enter your name first!'); return; }
         currentUserName = nameVal;
-        
+
         showScreen('cameraScreen');
         if (!video.srcObject) {
             navigator.mediaDevices
@@ -330,6 +357,7 @@
         }
     };
 
+    /* ── CAPTURE ── */
     document.getElementById('captureBtn').onclick = async () => {
         canvas.width  = video.videoWidth;
         canvas.height = video.videoHeight;
@@ -348,78 +376,83 @@
 
             if (data.images && data.images.length > 0) {
                 const aiImageUrl = data.images[0].url;
-                const aiImgObj   = new Image();
 
-                aiImgObj.onload = async () => {
-                    const compCanvas = document.createElement('canvas');
-                    const ctx        = compCanvas.getContext('2d');
-                    const frame      = document.getElementById('frameImg');
-                    const footer     = document.getElementById('footerImg');
-                    const badge      = document.getElementById('badgeImg'); // Our Badge Layer
+                // Load all assets in parallel
+                const [aiImgObj, frame, footerAi, batch] = await Promise.all([
+                    loadImage(aiImageUrl),
+                    loadImage('assets/frame.png').catch(() => null),
+                    loadImage('assets/Footer_Ai.png').catch(() => null),
+                    loadImage('assets/Batch.png').catch(() => null)
+                ]);
 
-                    let drawX = 0, drawY = 0, drawW = aiImgObj.width, drawH = aiImgObj.height;
+                const compCanvas = document.createElement('canvas');
+                const ctx        = compCanvas.getContext('2d');
 
-                    if (frame && frame.naturalWidth > 0) {
-                        compCanvas.width  = frame.naturalWidth;
-                        compCanvas.height = frame.naturalHeight;
-                        ctx.drawImage(frame, 0, 0);
-                        drawW = 1080;
-                        drawH = 1920;
-                        drawX = (compCanvas.width  - drawW) / 2;
-                        drawY = (compCanvas.height - drawH) / 2;
-                        ctx.drawImage(aiImgObj, drawX, drawY, drawW, drawH);
-                    } else {
-                        compCanvas.width  = aiImgObj.width;
-                        compCanvas.height = aiImgObj.height;
-                        ctx.drawImage(aiImgObj, 0, 0);
-                    }
+                /* ── Step 1: base canvas size ── */
+                if (frame && frame.naturalWidth > 0) {
+                    compCanvas.width  = frame.naturalWidth;
+                    compCanvas.height = frame.naturalHeight;
+                } else {
+                    compCanvas.width  = aiImgObj.naturalWidth  || 1080;
+                    compCanvas.height = aiImgObj.naturalHeight || 1920;
+                }
 
-                    // --- NEW: Draw the Badge Layer onto the Lab Coat ---
-                    if (badge && badge.naturalWidth > 0) {
-                        const badgeW = drawW * 0.20; // Size: 20% of the image width
-                        const badgeH = (badge.naturalHeight / badge.naturalWidth) * badgeW;
-                        
-                        // Positioning: Move 66% across to the right, and 64% down from the top 
-                        // (You can adjust 0.66 and 0.64 if you need it slightly higher/lower/left/right)
-                        const badgeX = drawX + (drawW * 0.66);
-                        const badgeY = drawY + (drawH * 0.64);
-                        
-                        ctx.drawImage(badge, badgeX, badgeY, badgeW, badgeH);
-                    }
+                const W = compCanvas.width;
+                const H = compCanvas.height;
 
-                    // --- Draw the Footer Layer ---
-                    if (footer && footer.naturalWidth > 0) {
-                        const footerWidth = compCanvas.width;
-                        const footerHeight = (footer.naturalHeight / footer.naturalWidth) * footerWidth; 
-                        ctx.drawImage(footer, 0, compCanvas.height - footerHeight, footerWidth, footerHeight);
-                    }
+                /* ── Step 2: draw frame (background layer) ── */
+                if (frame && frame.naturalWidth > 0) {
+                    ctx.drawImage(frame, 0, 0, W, H);
+                }
 
-                    const finalImageUrl = compCanvas.toDataURL('image/jpeg', 0.95);
-                    document.getElementById('resultImg').src = finalImageUrl;
-                    showScreen('resultScreen');
+                /* ── Step 3: draw AI-generated photo centred ── */
+                const photoW = 1080;
+                const photoH = 1920;
+                const photoX = (W - photoW) / 2;
+                const photoY = (H - photoH) / 2;
+                ctx.drawImage(aiImgObj, photoX, photoY, photoW, photoH);
 
-                    const qrContainer  = document.getElementById('qrCodeContainer');
-                    const qrImgEl      = document.getElementById('qrImg');
-                    const qrTextEl     = document.getElementById('qrText');
-                    qrContainer.style.display = 'flex';
-                    qrImgEl.src  = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
-                    qrTextEl.innerHTML = 'UPLOADING…<br>PLEASE WAIT';
+                /* ── Step 4: overlay Footer_Ai.png across the BOTTOM of the image ── */
+                if (footerAi && footerAi.naturalWidth > 0) {
+                    // Scale footer to full canvas width, preserve its aspect ratio for height
+                    const fH = Math.round((footerAi.naturalHeight / footerAi.naturalWidth) * W);
+                    ctx.drawImage(footerAi, 0, H - fH, W, fH);
+                }
 
-                    try {
-                        const uploadRes  = await fetch('/upload-to-drive', {
-                            method:  'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body:    JSON.stringify({ image_url: finalImageUrl, userName: currentUserName })
-                        });
-                        const uploadData = await uploadRes.json();
-                        qrImgEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(uploadData.link)}`;
-                        qrTextEl.innerHTML = 'SCAN QR CODE<br>TO DOWNLOAD<br>YOUR PHOTO';
-                    } catch {
-                        qrTextEl.innerHTML = 'UPLOAD FAILED.<br>SEE STAFF.';
-                    }
-                };
+                /* ── Step 5: overlay Batch.png badge at the TOP-RIGHT corner ── */
+                if (batch && batch.naturalWidth > 0) {
+                    // Badge: ~22% of canvas width
+                    const bW = Math.round(W * 0.22);
+                    const bH = Math.round((batch.naturalHeight / batch.naturalWidth) * bW);
+                    const bX = W - bW - Math.round(W * 0.03);   // 3% padding from right
+                    const bY = Math.round(H * 0.02);             // 2% padding from top
+                    ctx.drawImage(batch, bX, bY, bW, bH);
+                }
 
-                aiImgObj.src = aiImageUrl;
+                const finalImageUrl = compCanvas.toDataURL('image/jpeg', 0.95);
+                document.getElementById('resultImg').src = finalImageUrl;
+                showScreen('resultScreen');
+
+                /* ── QR Upload ── */
+                const qrContainer = document.getElementById('qrCodeContainer');
+                const qrImgEl     = document.getElementById('qrImg');
+                const qrTextEl    = document.getElementById('qrText');
+                qrContainer.style.display = 'flex';
+                qrImgEl.src  = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
+                qrTextEl.innerHTML = 'UPLOADING…<br>PLEASE WAIT';
+
+                try {
+                    const uploadRes  = await fetch('/upload-to-drive', {
+                        method:  'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body:    JSON.stringify({ image_url: finalImageUrl, userName: currentUserName })
+                    });
+                    const uploadData = await uploadRes.json();
+                    qrImgEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(uploadData.link)}`;
+                    qrTextEl.innerHTML = 'SCAN QR CODE<br>TO DOWNLOAD<br>YOUR PHOTO';
+                } catch {
+                    qrTextEl.innerHTML = 'UPLOAD FAILED.<br>SEE STAFF.';
+                }
             }
         } catch (err) {
             console.error(err);
@@ -428,8 +461,9 @@
         }
     };
 
+    /* ── HOME ── */
     document.getElementById('homeBtn').onclick = () => {
-        document.getElementById('userName').value        = '';
+        document.getElementById('userName').value = '';
         document.getElementById('qrCodeContainer').style.display = 'none';
         if (video.srcObject) {
             video.srcObject.getTracks().forEach(t => t.stop());
