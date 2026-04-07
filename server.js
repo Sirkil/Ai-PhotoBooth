@@ -32,14 +32,14 @@ app.post('/process-image', async (req, res) => {
         const { image_url, overlay_footer, overlay_batch } = req.body;
 
         // ── 1. Generate AI image via Gemini ──────────────────────────────
-        const selectedPrompt = `Transform the person in the image into a futuristic AI photobooth portrait. 
+const selectedPrompt = `Transform the person in the image into a futuristic AI photobooth portrait. 
 Keep the original face identity unchanged, centered and looking directly at the camera.
 
 Make the person wear a clean white pharmacist lab coat over a subtle green shirt.
 
-Add a realistic embroidered patch on the lab coat (chest area), using the provided logo exactly as reference. 
+Add a realistic embroidered patch explicitly placed directly onto the outer white fabric of the pharmacist lab coat itself (left chest area), using the provided logo exactly as reference. Ensure the patch is NOT placed on the green shirt underneath or any other clothing shapes, but is clearly stitched onto the main white coat material. 
 The patch should preserve the original logo design, colors (black, white, and green), and typography. 
-It should look naturally stitched or printed onto the fabric, with realistic texture and lighting integration.
+It should look naturally stitched or printed onto the white fabric, with realistic texture and lighting integration.
 
 Add a soft neon green glow around the body and face, with floating digital particles and light dots surrounding the head.
 
